@@ -1,12 +1,15 @@
 /**
  * Created by rowan-reid on 2016/09/28.
  */
-$(function() {
 
+
+$(function() {
+var lastUrl;
     // When our emptyModal is closed we remove it's content so that when it is filled
     // again then it will accept the new content, as per:
     // http://stackoverflow.com/questions/12286332/twitter-bootstrap-remote-modal-shows-same-content-everytime
     var $body = $('body');
+    
     $body.on('hidden.bs.modal', '.modal', function () {
         $(this).removeData('bs.modal');
 
@@ -23,16 +26,28 @@ $(function() {
     $body.on('click','a[data-sideclick-modal-trigger]', function (e) {
         e.preventDefault();
         var $modalUrl = $(e.currentTarget).attr('href');
+        lastUrl = $modalUrl;
         // if ($modalUrl.indexOf('#modal=')) {}
         if ($modalUrl.indexOf('#modal=') !== -1){
             $modalUrl = $modalUrl.substring(7, $modalUrl.length);
+            
         }
-        var modal = 'modal=' + $modalUrl;
+        var modal = '#modal=' + $modalUrl;
         if (window.location.hash === '') {
-            window.location.hash = modal;
+          
+            window.location.href= modal;
+            
+             
+            
         }else {
+           
             var currentHash = window.location.hash.replace('#','');
-            window.location.hash = currentHash + '&' + modal;
+            
+            var href = window.location.href;
+            href = href.split('#');
+            console.log(href);
+            window.location.hash = '';//currentHash + '&' + modal;
+            window.location.hash = modal;
         }
     });
 
@@ -95,7 +110,7 @@ $(function() {
                     // if the response is JSON and has a redirect data item
                     if (data.redirect) {
                         // data.redirect contains the string URL to redirect to
-                        window.location.replace(data.redirect);
+                        //////window.location.replace(data.redirect);
 
                         // else we have normal html
                     } else if (data.reload) {
@@ -106,7 +121,7 @@ $(function() {
                         // value but this is quicker for now, since we dont use the hash for
                         // anything else yet
                         // window.location.hash = '';
-                        createHashUrl();
+                        //////createHashUrl();
 
                         window.location.reload();
                     } else {
@@ -178,11 +193,8 @@ $(function() {
         bindModalAjaxForms();
         bindModalLinks();
     };
-
-    // This function looks at the window.location.hash string as a
-    // query string style key value pair stirng and extracts a variable
-    // using the passed variable as the key
-    getHashVariable = function(variable) {
+    
+        getHashVariable = function(variable) {
 
         // get the whole hash variable without the leading #
         var query = window.location.hash.replace('#','');
@@ -210,13 +222,52 @@ $(function() {
         return false;
     }
 
+    // This function looks at the window.location.hash string as a
+    // query string style key value pair stirng and extracts a variable
+    // using the passed variable as the key
+    getHashVariableFull = function(variable) {
+
+        // get the whole hash variable without the leading #
+        var query = window.location.hash.replace('#','');
+        
+        // split into constituent key value pairs based on &
+        var vars = query.split('$');
+
+        // for each key value
+        for (var i = 0; i < vars.length; i++) {
+
+            // split into the key value pair based on =
+            var pair = vars[i].split('$');
+            var auxi = decodeURIComponent(pair.shift());
+            // if the key is the variable we are looking for
+            if (~auxi.indexOf(variable)){
+            //if (decodeURIComponent(pair.shift()) == variable) {
+
+                // then join the rest of the array (its probably just
+                // one value, but there might be more if it included
+                // more = characters, in the case of a modal window
+                // having query string variables for example)
+                return auxi;
+             
+                //return decodeURIComponent(pair.join('='));
+            }
+        }
+
+        return false;
+    }
+    
+    
 
     // detect if the window.location.hash changes, if it does then
     // check if we have a #modal= value, if we do then we launch
     // our modal window
     window.addEventListener('hashchange', launchModal, false);
     function launchModal() {
-        var modalLocation = getHashVariable('modal');
+        
+        //var modalLocation =  getHashVariable('modal');
+        var modalLocationFull = getHashVariableFull('modal');
+       
+       var modalLocation = modalLocationFull.toString().substr(6);
 
         if (modalLocation == false) {
 
@@ -229,7 +280,7 @@ $(function() {
             $('#emptyModal').modal();
 
             var jqxhr = $.get( modalLocation, function(response, status, xhr) {
-
+                
                 if ( status == "error" ) {
 
                     // if we got a Forbidden response returned then
@@ -244,8 +295,8 @@ $(function() {
                         // value but this is quicker for now, since we dont use the hash for
                         // anything else yet
                         // window.location.hash = '';
-                        createHashUrl();
-                        window.location.reload();
+                        //////createHashUrl();
+                       window.location.reload();
                     }
                 } else {
 
@@ -274,8 +325,13 @@ $(function() {
     $('#emptyModal').on('hide.bs.modal', function (e) {
         // window.location.hash = '';
         // get the whole hash variable without the leading #
-
-        createHashUrl();
+        
+        var href = window.location.href;
+        href = href.split('#');
+       
+      
+        window.location.hash = '';//href[0];
+       //////createHashUrl();
     });
 
     //
@@ -350,7 +406,7 @@ $(function() {
             var hashUrlArray = [];
             // split into constituent key value pairs based on &
             var vars = query.split('&');
-            console.log(vars);
+            
             for (var i = 0; i < vars.length; i++) {
                 // split into the key value pair based on =
                 var pair = vars[i].split('=');
