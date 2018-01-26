@@ -1,5 +1,5 @@
 {
-    "name": "tiitoo/bootstrap-modal-bundle",
+    "name": "tiitoo/bootstrap3-modal-bundle",
     "description": "Bundle for Symfony 2.6+ that makes it easy to load pages into a Bootstrap modal window.",
     "type": "package",
     "require": {
